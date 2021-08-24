@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	beego "github.com/beego/beego/v2/server/web"
-	"neutron0.1/utils"
+	"neutron0.1/token"
 )
 
 type MainController struct {
@@ -32,7 +32,7 @@ func (c *MainController) CreateToDo() {
 		return
 	}
 
-	tokenAuth, err := utils.ExtractTokenMetadata(c.Ctx.Request)
+	tokenAuth, err := newjwt.ExtractTokenMetadata(c.Ctx.Request)
 	fmt.Println("*extract token tokenAuth:", tokenAuth)
 	if err != nil {
 		fmt.Println("json err:", err)
@@ -41,7 +41,7 @@ func (c *MainController) CreateToDo() {
 		c.StopRun()
 	}
 
-	userid, err := utils.FetchAuth(tokenAuth)
+	userid, err := token.FetchAuth(tokenAuth)
 	if err != nil {
 		c.Data["json"] = "unauthorized fetch"
 		c.ServeJSON()
