@@ -6,5 +6,7 @@ BEEGO
 Postgresql-ORM
 
 Redis
+
 JWT Auth
+
 port: 8080
