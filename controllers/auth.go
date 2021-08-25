@@ -1,50 +1,66 @@
 package controllers
 
-// import (
-// 	"fmt"
+import (
+	"encoding/json"
+	"fmt"
 
-// 	_ "github.com/jackc/pgx"
-// 	"github.com/jinzhu/gorm"
-// 	"github.com/qor/auth"
-// )
+	"neutron0.1/models"
+)
 
-// type Authentication struct {
-// 	Id       uint `gorm:"primarykey, autoIncrement"`
-// 	Name     string
-// 	Email    string `gorm:"unique"`
-// 	Password string
-// }
+func (c *UserController) Auth() {
+	var u models.User
+	// fmt.Println("->ctx i ->", string(c.Controller.Ctx.Input.RequestBody))
+	err := json.Unmarshal([]byte(c.Ctx.Input.RequestBody), &u)
+	if err != nil {
+		fmt.Println("unmarshal error: ", err)
+		return
+	}
 
-// var (
-// 	dsn = "host=localhost user=postgres password=kaak dbname=auth port=5432 sslmode=disable"
+	id, err := models.CreateNew(u.Name, u.Lastname, u.Username, u.Email, u.Password)
+	if err != nil {
+		errResponse := ErrResponse{
+			Message: err.Error(),
+		}
+		c.Data["json"] = errResponse
+		c.ServeJSON()
+		c.StopRun()
+	}
 
-// 	db, _ = gorm.Open("postgres", dsn)
+	user, err := models.FindById(id)
+	if err != nil {
+		errResponse := ErrResponse{
+			Message: err.Error(),
+		}
+		c.Data["json"] = errResponse
+		c.ServeJSON()
+		c.StopRun()
+	}
 
-// 	// Initialize Auth with configuration
-// 	Auth = auth.New(&auth.Config{
-// 		DB: db,
-// 	})
-// )
+	token, err := newjwt.Create(int64(user.Id))
+	if err != nil {
+		errResponse := ErrResponse{
+			Message: err.Error(),
+		}
+		c.Data["json"] = errResponse
+		c.ServeJSON()
+		c.StopRun()
+	}
 
-// func init() {
-// 	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-// 	// if err != nil {
-// 	// 	fmt.Println("gorm: ", err)
-// 	// }
+	// saveErr := util.CreateAuth(user.Id, token)
+	// if saveErr != nil {
+	// 	errResponse := ErrResponse{
+	// 		Message: "Failed to create auth",
+	// 	}
+	// 	c.Data["json"] = errResponse
+	// }
 
-// 	// _, err := gorm.Open(postgres.New(postgres.Config{
-// 	// 	DriverName: "postgresql",
-// 	// 	DSN:        dsn,
-// 	// }))
+	successRes := AuthResponse{
+		Message: "User created successfully",
+		User:    user,
+		Token:   token,
+	}
+	c.Data["json"] = successRes
+	c.ServeJSON()
+	c.StopRun()
 
-// 	// fmt.Println(err)
-
-// 	db.DB().Ping()
-// 	db.AutoMigrate(&Authentication{})
-
-// 	a := Authentication{Name: "Ciril", Email: "cer", Password: "123"}
-// 	result := db.Create(&a)
-
-// 	fmt.Println(result.Error)
-// 	fmt.Println(result.RowsAffected)
-// }
+}

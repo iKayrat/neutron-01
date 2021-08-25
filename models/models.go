@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
-	"golang.org/x/crypto/bcrypt"
+	"neutron0.1/util"
 
-	// _ "github.com/jackc/pgx"
 	_ "github.com/lib/pq"
 )
 
@@ -50,7 +49,7 @@ func CreateNew(name, lastname, username, email, password string) (uid int64, err
 	user.Username = username
 	user.Email = email
 
-	hash, err := HashPassword(password)
+	hash, err := util.HashPassword(password)
 	if err != nil {
 		return -1, err
 	}
@@ -96,7 +95,7 @@ func CheckUser(email, password string) (user *User, err error) {
 	u, err := FindByEmail(email)
 	fmt.Println(u)
 	if err == nil {
-		if ok := CheckPasswordAndHash(password, u.Password); !ok {
+		if ok := util.CheckPasswordAndHash(password, u.Password); !ok {
 			return nil, errors.New("email and password doesn't match")
 		}
 		return u, nil
@@ -105,14 +104,4 @@ func CheckUser(email, password string) (user *User, err error) {
 		return nil, err
 	}
 
-}
-
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func CheckPasswordAndHash(password, hashed string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hashed), []byte(password))
-	return err == nil
 }

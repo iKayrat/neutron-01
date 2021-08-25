@@ -9,21 +9,15 @@ import (
 	_ "github.com/astaxie/beego/session/redis"
 
 	beego "github.com/beego/beego/v2/server/web"
-	"github.com/dgrijalva/jwt-go"
 	"neutron0.1/models"
-	"neutron0.1/utils"
+	"neutron0.1/token"
 )
 
 var GlobalSessions *session.Manager
+var newjwt *token.JwtManager
 
 func init() {
-	// dsn := "localhost:6379"
-	// var err error
-	c, err := redis.Dial("tcp", ":6379")
-	if err != nil {
-		fmt.Println("redis dial error:", err)
-	}
-	defer c.Close()
+	var err error
 
 	sessionConfig := &session.ManagerConfig{
 		CookieName:      "gosessionid",
@@ -49,8 +43,7 @@ type UserController struct {
 type AuthResponse struct {
 	Message string              `json:"message"`
 	User    *models.User        `json:"user"`
-	Token   *utils.TokenDetails `json:"token"`
-	jwt.StandardClaims
+	Token   *token.TokenDetails `json:"token"`
 }
 
 type ErrResponse struct {
@@ -65,13 +58,14 @@ func (c *UserController) ActiveContent(view string) {
 	c.TplName = view + ".tpl"
 }
 
+// Register: CreateNew()-FindById()-Create()
 func (c *UserController) Register() {
 
 	c.ActiveContent("user/register")
 
 	// BodyRequest
-
 	var u models.User
+
 	// fmt.Println("->ctx i ->", string(c.Controller.Ctx.Input.RequestBody))
 	err := json.Unmarshal([]byte(c.Ctx.Input.RequestBody), &u)
 	if err != nil {
@@ -101,7 +95,7 @@ func (c *UserController) Register() {
 		c.StopRun()
 	}
 
-	token, err := utils.GenerateToken(id)
+	token, err := newjwt.Create(id)
 	if err != nil {
 		errResponse := ErrResponse{
 			Message: "Failed to generate token",
@@ -147,7 +141,7 @@ func (c *UserController) Login() {
 		c.StopRun()
 	}
 
-	token, err := utils.GenerateToken(int64(user.Id))
+	jwttoken, err := newjwt.Create(int64(user.Id))
 	if err != nil {
 		errResponse := ErrResponse{
 			Message: "Failed to generate token",
@@ -155,18 +149,18 @@ func (c *UserController) Login() {
 		c.Data["json"] = errResponse
 	}
 
-	saveErr := utils.CreateAuth(user.Id, token)
+	saveErr := token.CreateAuth(user.Id, jwttoken)
 	if saveErr != nil {
 		errResponse := ErrResponse{
 			Message: "Failed to create auth",
 		}
 		c.Data["json"] = errResponse
 	}
-	fmt.Println("refreshToken", token.RefreshToken)
+	fmt.Println("refreshToken", jwttoken.RefreshToken)
 	successRes := AuthResponse{
 		Message: "User logged in successfully",
 		User:    user,
-		Token:   token,
+		Token:   jwttoken,
 	}
 
 	c.Data["json"] = successRes
@@ -175,12 +169,12 @@ func (c *UserController) Login() {
 }
 
 func (c *UserController) Logout() {
-	auid, err := utils.ExtractTokenMetadata(c.Ctx.Request)
+	auid, err := newjwt.ExtractTokenMetadata(c.Ctx.Request)
 	if err != nil {
 		c.Data["json"] = "Unathorized"
 		c.ServeJSON()
 	}
-	err = utils.DeleteTokens(auid)
+	err = token.DeleteTokens(auid)
 	if err != nil {
 		fmt.Println("delete tokens: ", err)
 		c.Data["json"] = "unathorized del"
@@ -203,7 +197,7 @@ func (c *UserController) Refresh() {
 
 	refreshToken := mapToken["refresh_token"]
 
-	tokens, err := utils.RefreshToken(refreshToken)
+	tokens, err := newjwt.RefreshToken(refreshToken)
 	if err != nil {
 		c.Data["json"] = err
 		c.ServeJSON()
@@ -268,7 +262,7 @@ func (c *UserController) Loginsession() {
 // 		return
 // 	}
 // 	fmt.Println("map Token is: ", mapToken)
-// 	refreshSecretKey := utils.RefreshKey
+// 	refreshSecretKey := util.RefreshKey
 // 	refreshToken := mapToken["refresh_token"]
 
 // 	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
@@ -311,14 +305,14 @@ func (c *UserController) Loginsession() {
 // 			c.ServeJSON()
 // 			c.StopRun()
 // 		}
-// 		deleted, delerr := utils.DeleteAuth(refreshUuid)
+// 		deleted, delerr := util.DeleteAuth(refreshUuid)
 // 		if delerr != nil || deleted == 0 {
 // 			fmt.Println("unauthorized:", delerr)
 // 			c.Data["json"] = "DeleteAuth err"
 // 			c.ServeJSON()
 // 			c.StopRun()
 // 		}
-// 		newToken, newtokErr := utils.GenerateToken(int64(userId))
+// 		newToken, newtokErr := util.GenerateToken(int64(userId))
 // 		if err != nil {
 // 			fmt.Println("generating token err:", newtokErr)
 // 			c.Data["json"] = "Generate err"
@@ -326,7 +320,7 @@ func (c *UserController) Loginsession() {
 // 			c.StopRun()
 // 		}
 
-// 		err = utils.CreateAuth(uint(userId), newToken)
+// 		err = util.CreateAuth(uint(userId), newToken)
 // 		if err != nil {
 // 			fmt.Println(err)
 // 			c.Data["json"] = "CreateAuth err"
