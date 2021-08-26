@@ -46,7 +46,7 @@ func init() {
 	// _ = orm.RegisterDataBase("default", "postgres", "dbname=neutron0.1 host=localhost user=postgres password=kaak port=5432 sslmode=disable")
 	_ = orm.RegisterDataBase("default", "postgres", pgParams)
 
-	orm.RegisterModel(new(User))
+	orm.RegisterModel(new(User), new(AuthToken))
 }
 
 func CreateNew(name, lastname, username, email, password string) (uid int64, err error) {

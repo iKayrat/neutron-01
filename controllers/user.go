@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/astaxie/beego/session"
 	_ "github.com/astaxie/beego/session/redis"
@@ -16,25 +15,25 @@ import (
 var GlobalSessions *session.Manager
 var newjwt *token.JwtManager
 
-func init() {
-	var err error
+// func init() {
+// 	var err error
 
-	sessionConfig := &session.ManagerConfig{
-		CookieName:      "gosessionid",
-		EnableSetCookie: true,
-		Gclifetime:      60,
-		Maxlifetime:     60,
-		Secure:          true,
-		CookieLifeTime:  60,
-		ProviderConfig:  `127.0.0.1:6379`,
-	}
+// 	sessionConfig := &session.ManagerConfig{
+// 		CookieName:      "gosessionid",
+// 		EnableSetCookie: true,
+// 		Gclifetime:      60,
+// 		Maxlifetime:     60,
+// 		Secure:          true,
+// 		CookieLifeTime:  60,
+// 		ProviderConfig:  `127.0.0.1:6379`,
+// 	}
 
-	GlobalSessions, err = session.NewManager("redis", sessionConfig)
-	if err != nil {
-		fmt.Println("errrrrr sessiossnnfs")
-	}
-	go GlobalSessions.GC()
-}
+// 	GlobalSessions, err = session.NewManager("redis", sessionConfig)
+// 	if err != nil {
+// 		fmt.Println("errrrrr sessiossnnfs")
+// 	}
+// 	go GlobalSessions.GC()
+// }
 
 type UserController struct {
 	beego.Controller
@@ -95,7 +94,7 @@ func (c *UserController) Register() {
 		c.StopRun()
 	}
 
-	token, err := newjwt.Create(id)
+	token, err := newjwt.Create(int64(user.Id))
 	if err != nil {
 		errResponse := ErrResponse{
 			Message: "Failed to generate token",
@@ -207,52 +206,52 @@ func (c *UserController) Refresh() {
 	c.StopRun()
 }
 
-func (c *UserController) Loginsession() {
-	c.ActiveContent("user/login")
+// func (c *UserController) Loginsession() {
+// 	c.ActiveContent("user/login")
 
-	sess, err := GlobalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
-	if err != nil {
-		log.Panic("session: Session start erroro")
-	}
+// 	sess, err := GlobalSessions.SessionStart(c.Ctx.ResponseWriter, c.Ctx.Request)
+// 	if err != nil {
+// 		log.Panic("session: Session start erroro")
+// 	}
 
-	defer sess.SessionRelease(c.Ctx.ResponseWriter)
+// 	defer sess.SessionRelease(c.Ctx.ResponseWriter)
 
-	// c.Ctx.Request.ParseForm()
-	// if c.Ctx.Request.Method == "GET" {
-	// 	t, _ := template.ParseFiles("views/user/login.tpl")
-	// 	c.Ctx.ResponseWriter.Header().Set("Content-Type", "text/html")
-	// 	t.Execute(c.Ctx.ResponseWriter, sess.Get("gosessionid"))
+// 	// c.Ctx.Request.ParseForm()
+// 	// if c.Ctx.Request.Method == "GET" {
+// 	// 	t, _ := template.ParseFiles("views/user/login.tpl")
+// 	// 	c.Ctx.ResponseWriter.Header().Set("Content-Type", "text/html")
+// 	// 	t.Execute(c.Ctx.ResponseWriter, sess.Get("gosessionid"))
 
-	// } else {
-	// 	sess.Set("authtoken", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjA5NjE5MDI0LWMwM2UtNGZkMy05YjZhLWE1MTA5NDA5ZDkzOCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYyNjUyMTE3NywidXNlcl9pZCI6M30.7wCKQRCvgN7SHFSCuekMTpwmFIUfDn0ouerCtMf5us0")
-	// 	err := c.SetSession("authtoken", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjA5NjE5MDI0LWMwM2UtNGZkMy05YjZhLWE1MTA5NDA5ZDkzOCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYyNjUyMTE3NywidXNlcl9pZCI6M30.7wCKQRCvgN7SHFSCuekMTpwmFIUfDn0ouerCtMf5us0")
-	// 	if err != nil {
-	// 		fmt.Println("set session err", err)
-	// 	}
-	// 	c.Redirect("/", http.StatusFound)
-	// }
-	sess.Set("sess", "package cookie set")
+// 	// } else {
+// 	// 	sess.Set("authtoken", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjA5NjE5MDI0LWMwM2UtNGZkMy05YjZhLWE1MTA5NDA5ZDkzOCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYyNjUyMTE3NywidXNlcl9pZCI6M30.7wCKQRCvgN7SHFSCuekMTpwmFIUfDn0ouerCtMf5us0")
+// 	// 	err := c.SetSession("authtoken", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjA5NjE5MDI0LWMwM2UtNGZkMy05YjZhLWE1MTA5NDA5ZDkzOCIsImF1dGhvcml6ZWQiOnRydWUsImV4cCI6MTYyNjUyMTE3NywidXNlcl9pZCI6M30.7wCKQRCvgN7SHFSCuekMTpwmFIUfDn0ouerCtMf5us0")
+// 	// 	if err != nil {
+// 	// 		fmt.Println("set session err", err)
+// 	// 	}
+// 	// 	c.Redirect("/", http.StatusFound)
+// 	// }
+// 	sess.Set("sess", "package cookie set")
 
-	packageCookie := sess.Get("sess")
-	fmt.Println("packageCookie: ", packageCookie)
+// 	packageCookie := sess.Get("sess")
+// 	fmt.Println("packageCookie: ", packageCookie)
 
-	c.SetSecureCookie("cookie", "auth", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjcyODA5NTYsInJlZnJlc2hfaWQiOiIwOTcwMTY5Yi00MTRkLTQ0ZWMtOGU5Ni1kNzA1MzUwMWM4MGEiLCJ1c2VyX2lkIjozfQ.SuAo0SAdvZB33R1csFchgStZFJdRe1ljYIzJUStygvc")
-	getsecurecookie, ok := c.GetSecureCookie("cookie", "auth")
-	if !ok {
-		fmt.Println("cookie is false")
-	}
-	fmt.Println("getsecurecookie is: ", getsecurecookie)
+// 	c.SetSecureCookie("cookie", "auth", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MjcyODA5NTYsInJlZnJlc2hfaWQiOiIwOTcwMTY5Yi00MTRkLTQ0ZWMtOGU5Ni1kNzA1MzUwMWM4MGEiLCJ1c2VyX2lkIjozfQ.SuAo0SAdvZB33R1csFchgStZFJdRe1ljYIzJUStygvc")
+// 	getsecurecookie, ok := c.GetSecureCookie("cookie", "auth")
+// 	if !ok {
+// 		fmt.Println("cookie is false")
+// 	}
+// 	fmt.Println("getsecurecookie is: ", getsecurecookie)
 
-	cookie := c.Ctx.Input.Cookie("gosessionid")
-	cookieContext := c.Ctx.Input.Cookie("auth")
-	cookieget := sess.Get(cookie)
-	getsess := c.GetSession("gosessionid")
-	fmt.Println("cookie is: ", cookie)
-	fmt.Println("cookieContext is: ", cookieContext)
-	fmt.Println("cookieget is: ", cookieget)
-	fmt.Println("getsess is: ", getsess)
+// 	cookie := c.Ctx.Input.Cookie("gosessionid")
+// 	cookieContext := c.Ctx.Input.Cookie("auth")
+// 	cookieget := sess.Get(cookie)
+// 	getsess := c.GetSession("gosessionid")
+// 	fmt.Println("cookie is: ", cookie)
+// 	fmt.Println("cookieContext is: ", cookieContext)
+// 	fmt.Println("cookieget is: ", cookieget)
+// 	fmt.Println("getsess is: ", getsess)
 
-}
+// }
 
 // func (c *UserController) Refresh() {
 // 	mapToken := map[string]string{}

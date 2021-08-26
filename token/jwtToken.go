@@ -10,25 +10,24 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis"
 	"github.com/twinj/uuid"
-	"neutron0.1/models"
 )
 
 var client *redis.Client
 
 // redis connection
-func init() {
-	dsn := "localhost:6379"
+// func init() {
+// 	dsn := "localhost:6379"
 
-	client = redis.NewClient(&redis.Options{
-		Addr:     dsn,
-		Password: "",
-		DB:       0,
-	})
-	_, err := client.Ping().Result()
-	if err != nil {
-		fmt.Println("Redis Client err: ", err)
-	}
-}
+// 	client = redis.NewClient(&redis.Options{
+// 		Addr:     dsn,
+// 		Password: "",
+// 		DB:       0,
+// 	})
+// 	_, err := client.Ping().Result()
+// 	if err != nil {
+// 		fmt.Println("Redis Client err: ", err)
+// 	}
+// }
 
 const (
 	Key                  string = "iambatman"
@@ -61,11 +60,7 @@ func NewJwtManager() Maker {
 
 // Create FindId()-new token with claims
 func (m *JwtManager) Create(id int64) (*TokenDetails, error) {
-	user, err := models.FindById(id)
-	if err != nil {
-		fmt.Println("email not found", err.Error())
-	}
-
+	var err error
 	// Create the Claims
 	td := &TokenDetails{}
 
@@ -78,7 +73,7 @@ func (m *JwtManager) Create(id int64) (*TokenDetails, error) {
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["access_uuid"] = td.AccessUuid
-	atClaims["user_id"] = user.Id
+	atClaims["user_id"] = id
 	atClaims["exp"] = td.AtExpires
 
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
@@ -94,7 +89,7 @@ func (m *JwtManager) Create(id int64) (*TokenDetails, error) {
 
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refresh_id"] = td.RefreshUuid
-	rtClaims["user_id"] = user.Id
+	rtClaims["user_id"] = id
 	rtClaims["exp"] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(RefreshKey))
