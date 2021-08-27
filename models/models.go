@@ -3,12 +3,14 @@ package models
 import (
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/config"
 	"neutron0.1/util"
 
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -40,11 +42,17 @@ func init() {
 	host, _ := config.String("pgHost")
 	user, _ := config.String("pgUser")
 	password, _ := config.String("pgPassword")
+	url := os.Getenv("DATABASE_URL")
+	connnetion, _ := pq.ParseURL(url)
+	connnetion += " sslmode=disable"
+	fmt.Println("connnetion:", connnetion)
 
 	pgParams := fmt.Sprintf("dbname=%s host=%s user=%s password=%s port=5432 sslmode=disable", dbname, host, user, password)
+	fmt.Println("connnetion:", pgParams)
+
 	_ = orm.RegisterDriver("postgres", orm.DRPostgres)
 	// _ = orm.RegisterDataBase("default", "postgres", "dbname=neutron0.1 host=localhost user=postgres password=kaak port=5432 sslmode=disable")
-	_ = orm.RegisterDataBase("default", "postgres", pgParams)
+	_ = orm.RegisterDataBase("default", "postgres", connnetion)
 
 	orm.RegisterModel(new(User), new(AuthToken))
 }
