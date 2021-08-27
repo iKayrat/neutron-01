@@ -9,7 +9,6 @@ import (
 	"github.com/beego/beego/v2/core/config"
 	"neutron0.1/util"
 
-	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -37,21 +36,16 @@ type BasicCredentials struct {
 
 func init() {
 
-	dbname, _ := config.String("pgDB")
-	host, _ := config.String("pgHost")
-	user, _ := config.String("pgUser")
-	password, _ := config.String("pgPassword")
 	url, _ := config.String("pgURI")
-	connnetion, _ := pq.ParseURL(url)
-	connnetion += " sslmode=disable"
-	fmt.Println("connnetion:", connnetion)
+	// fmt.Println("url-pg:", url)
+	// ssl := "sslmode=disable"
 
-	pgParams := fmt.Sprintf("dbname=%s host=%s user=%s password=%s port=5432 sslmode=disable", dbname, host, user, password)
-	fmt.Println("connnetion:", pgParams)
+	// pgParams := fmt.Sprintf("%s %s", url, ssl)
+	// fmt.Println("connnetion:", pgParams)
 
 	_ = orm.RegisterDriver("postgres", orm.DRPostgres)
 	// _ = orm.RegisterDataBase("default", "postgres", "dbname=neutron0.1 host=localhost user=postgres password=kaak port=5432 sslmode=disable")
-	_ = orm.RegisterDataBase("default", "postgres", connnetion)
+	_ = orm.RegisterDataBase("default", "postgres", url)
 
 	orm.RegisterModel(new(User), new(AuthToken))
 }
