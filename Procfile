@@ -1,1 +1,1 @@
-web: neutron-01
+web: bin/neutron-01
