@@ -3,7 +3,6 @@ package models
 import (
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
@@ -42,7 +41,7 @@ func init() {
 	host, _ := config.String("pgHost")
 	user, _ := config.String("pgUser")
 	password, _ := config.String("pgPassword")
-	url := os.Getenv("DATABASE_URL")
+	url, _ := config.String("pgURI")
 	connnetion, _ := pq.ParseURL(url)
 	connnetion += " sslmode=disable"
 	fmt.Println("connnetion:", connnetion)
