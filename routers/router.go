@@ -15,6 +15,7 @@ func init() {
 
 	beego.Router("/login", &controllers.UserController{}, "get,post:Loginsession")
 	beego.Router("/auth", &controllers.UserController{}, "get,post:Auth")
+
 	// beego.Get("/", func(ctx *context.Context) {
 	// 	_ = ctx.Output.Body([]byte("This is a Beego + JWT API - Creator: Mehran Abghari (mehran.ab80@gmail.com)"))
 	// })

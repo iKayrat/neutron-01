@@ -14,7 +14,6 @@ import (
 )
 
 var GlobalSessions *session.Manager
-var newjwt *token.JwtManager
 
 func init() {
 	var err error
@@ -38,6 +37,7 @@ func init() {
 
 type UserController struct {
 	beego.Controller
+	jwt *token.JwtManager
 }
 
 type AuthResponse struct {
@@ -95,7 +95,7 @@ func (c *UserController) Register() {
 		c.StopRun()
 	}
 
-	token, err := newjwt.Create(id)
+	token, err := c.jwt.Create(id)
 	if err != nil {
 		errResponse := ErrResponse{
 			Message: "Failed to generate token",
@@ -141,7 +141,7 @@ func (c *UserController) Login() {
 		c.StopRun()
 	}
 
-	jwttoken, err := newjwt.Create(int64(user.Id))
+	jwttoken, err := c.jwt.Create(int64(user.Id))
 	if err != nil {
 		errResponse := ErrResponse{
 			Message: "Failed to generate token",
@@ -169,7 +169,7 @@ func (c *UserController) Login() {
 }
 
 func (c *UserController) Logout() {
-	auid, err := newjwt.ExtractTokenMetadata(c.Ctx.Request)
+	auid, err := c.jwt.ExtractTokenMetadata(c.Ctx.Request)
 	if err != nil {
 		c.Data["json"] = "Unathorized"
 		c.ServeJSON()
@@ -197,7 +197,7 @@ func (c *UserController) Refresh() {
 
 	refreshToken := mapToken["refresh_token"]
 
-	tokens, err := newjwt.RefreshToken(refreshToken)
+	tokens, err := c.jwt.RefreshToken(refreshToken)
 	if err != nil {
 		c.Data["json"] = err
 		c.ServeJSON()
