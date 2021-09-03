@@ -36,7 +36,7 @@ func (c *UserController) Auth() {
 		c.StopRun()
 	}
 
-	token, err := newjwt.Create(int64(user.Id))
+	token, err := c.jwt.Create(int64(user.Id))
 	if err != nil {
 		errResponse := ErrResponse{
 			Message: err.Error(),

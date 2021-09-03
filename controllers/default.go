@@ -10,6 +10,7 @@ import (
 
 type MainController struct {
 	beego.Controller
+	jwt *token.JwtManager
 }
 
 func (c *MainController) Get() {
@@ -32,7 +33,7 @@ func (c *MainController) CreateToDo() {
 		return
 	}
 
-	tokenAuth, err := newjwt.ExtractTokenMetadata(c.Ctx.Request)
+	tokenAuth, err := c.jwt.ExtractTokenMetadata(c.Ctx.Request)
 	fmt.Println("*extract token tokenAuth:", tokenAuth)
 	if err != nil {
 		fmt.Println("json err:", err)
