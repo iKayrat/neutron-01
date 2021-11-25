@@ -5,4 +5,6 @@ BEEGO
 Postgresql-ORM
 Redis
 
+Auth JSON API
+
 port: 8080
